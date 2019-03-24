@@ -6,6 +6,7 @@
 package com.carlosalbertoxw.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Date;
@@ -39,11 +40,11 @@ public class JWT {
     public Integer verifyJWT(String compactJws) {
         try {
             Claims claims = Jwts.parser().setSigningKey(KEY.getBytes("UTF-8")).parseClaimsJws(compactJws).getBody();
-            if (claims.getExpiration().after(new Date())) {
-                if (claims.get("id") != null && !claims.get("id").equals("")) {
-                    return (Integer) claims.get("id");
-                }
+            if (claims.get("id") != null && !claims.get("id").equals("")) {
+                return (Integer) claims.get("id");
             }
+        } catch (ExpiredJwtException e) {
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "ExpiredJwtException:" + e.getMessage(), "");
         } catch (Exception e) {
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, e);
         }
