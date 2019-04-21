@@ -8,6 +8,7 @@ package com.carlosalbertoxw.jwt;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.PrematureJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Date;
 import java.util.logging.Level;
@@ -27,6 +28,8 @@ public class JWT {
             date.setTime(date.getTime() + 1000 * 60 * 1);
             String compactJws = Jwts.builder()
                     .setExpiration(date)
+                    .setIssuedAt(new Date())
+                    .setNotBefore(new Date())
                     .claim("id", IdUser)
                     .signWith(SignatureAlgorithm.HS512, KEY.getBytes("UTF-8"))
                     .compact();
@@ -43,6 +46,8 @@ public class JWT {
             if (claims.get("id") != null && !claims.get("id").equals("")) {
                 return (Integer) claims.get("id");
             }
+        } catch (PrematureJwtException e) {
+            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "PrematureJwtException:" + e.getMessage(), "");
         } catch (ExpiredJwtException e) {
             Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "ExpiredJwtException:" + e.getMessage(), "");
         } catch (Exception e) {
