@@ -1,0 +1,25 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: jwt-auth-api
+
+# Configuracion del emisor de tokens (se enlaza a JwtProperties)
+jwt:
+  issuer: jwt-ejemplo-java
+  audience: jwt-ejemplo-clientes
+  # En produccion define JWT_SECRET con un secreto propio (>= 32 bytes).
+  # El valor por defecto es SOLO para desarrollo/demo; el perfil 'prod' lo rechaza (ver JwtSecretGuard).
+  secret: ${JWT_SECRET:clave-secreta-de-ejemplo-para-firmar-jwt-cambia-esto-en-produccion}
+  access-minutes: 15
+  refresh-days: 7
+
+# CORS para permitir que la app web (Vaadin, otro puerto) consuma la API
+app:
+  cors:
+    allowed-origins: "http://localhost:8081"
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

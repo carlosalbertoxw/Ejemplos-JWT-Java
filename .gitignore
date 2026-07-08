@@ -9,3 +9,19 @@ dist/
 nbdist/
 target/
 nbtarget/
+
+#Maven / IDE
+.idea/
+*.iml
+.settings/
+.classpath
+.project
+
+#Vaadin (frontend generado)
+node_modules/
+frontend/generated/
+src/main/frontend/generated/
+vite.generated.ts
+package-lock.json
+tsconfig.json
+types.d.ts

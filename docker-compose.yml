@@ -1,0 +1,20 @@
+# Levanta la API (backend) y la app web (Vaadin) juntas.
+#   docker compose up --build
+# Luego abrir http://localhost:8081  (usuario: admin / admin123)
+services:
+  api:
+    build: ./api
+    image: jwt-ejemplo-api:latest
+    ports:
+      - "8080:8080"
+
+  web:
+    build: ./web
+    image: jwt-ejemplo-web:latest
+    ports:
+      - "8081:8081"
+    environment:
+      # La app web habla con la API server-to-server usando el nombre del servicio
+      - API_BASE_URL=http://api:8080
+    depends_on:
+      - api

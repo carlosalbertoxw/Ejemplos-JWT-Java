@@ -1,0 +1,14 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: jwt-auth-web
+
+# URL base de la API que consume esta app web
+api:
+  base-url: http://localhost:8080
+
+vaadin:
+  # En desarrollo, permite el servidor de frontend embebido
+  launch-browser: false
