@@ -12,6 +12,15 @@ updates:
     directories: ["/api", "/web"]
     schedule:
       interval: weekly
+    ignore:
+      # La imagen de build (maven:3.10-eclipse-temurin-25) fija el JDK LTS del
+      # proyecto. Dependabot no puede actualizarla conservando el sufijo
+      # "temurin-25" y propone saltar a JDKs que no son LTS: se actualiza a mano.
+      - dependency-name: "maven"
+      # Imagen de ejecución: solo parches; el salto a la siguiente versión LTS
+      # de Java (p. ej. 25 -> 29) se hace a mano junto con <java.version>.
+      - dependency-name: "eclipse-temurin"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
