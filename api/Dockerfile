@@ -1,5 +1,5 @@
 # ---- Etapa de compilacion ----
-FROM maven:3.10-eclipse-temurin-25 AS build
+FROM maven:3-eclipse-temurin-27 AS build
 WORKDIR /build
 
 # Copiamos primero los POMs para aprovechar la cache de dependencias
