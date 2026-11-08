@@ -1,0 +1,28 @@
+name: Build y pruebas
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [api, web]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      # Compila con -Xlint:all (falla ante advertencias) y ejecuta las pruebas.
+      - name: mvn verify (${{ matrix.project }})
+        working-directory: ${{ matrix.project }}
+        run: mvn -B verify

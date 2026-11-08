@@ -16,13 +16,6 @@ public record JwtSettings(
         long accessMinutes,
         long refreshDays) {
 
-    /** Valores por defecto pensados para desarrollo/demostracion. */
-    public static JwtSettings defaults() {
-        return new JwtSettings(
-                "jwt-ejemplo-java",
-                "jwt-ejemplo-clientes",
-                "clave-secreta-de-ejemplo-para-firmar-jwt-cambia-esto-en-produccion",
-                15,
-                7);
-    }
+    /** Longitud minima de la clave HMAC-SHA256 (RFC 7518: 256 bits). */
+    public static final int MIN_SECRET_BYTES = 32;
 }

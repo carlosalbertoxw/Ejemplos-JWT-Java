@@ -7,18 +7,29 @@ spring:
 
 # Configuracion del emisor de tokens (se enlaza a JwtProperties)
 jwt:
-  issuer: jwt-ejemplo-java
-  audience: jwt-ejemplo-clientes
-  # En produccion define JWT_SECRET con un secreto propio (>= 32 bytes).
-  # El valor por defecto es SOLO para desarrollo/demo; el perfil 'prod' lo rechaza (ver JwtSecretGuard).
-  secret: ${JWT_SECRET:clave-secreta-de-ejemplo-para-firmar-jwt-cambia-esto-en-produccion}
-  access-minutes: 15
-  refresh-days: 7
+  issuer: ${JWT_ISSUER:jwt-ejemplo-java}
+  audience: ${JWT_AUDIENCE:jwt-ejemplo-clientes}
+  # Sin valor por defecto: ninguna clave se versiona. Si JWT_SECRET falta, en
+  # desarrollo se genera una aleatoria al arrancar y con el perfil 'prod' la API
+  # no arranca (ver CoreBeansConfig).
+  secret: ${JWT_SECRET:}
+  access-minutes: ${JWT_ACCESS_MINUTES:15}
+  refresh-days: ${JWT_REFRESH_DAYS:7}
 
-# CORS para permitir que la app web (Vaadin, otro puerto) consuma la API
-app:
-  cors:
-    allowed-origins: "http://localhost:8081"
+# Limite de intentos fallidos de login/refresh (ventana deslizante)
+rate-limit:
+  account-max-attempts: ${RATE_LIMIT_MAX_ATTEMPTS:5}
+  ip-max-attempts: ${RATE_LIMIT_IP_MAX_ATTEMPTS:20}
+  window: ${RATE_LIMIT_WINDOW:15m}
+
+# Health check en /health (mismo path que las otras APIs del ejemplo);
+# solo se expone ese endpoint del actuator.
+management:
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health
 
 springdoc:
   swagger-ui:

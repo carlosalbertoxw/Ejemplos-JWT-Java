@@ -1,12 +1,24 @@
 # Levanta la API (backend) y la app web (Vaadin) juntas.
 #   docker compose up --build
-# Luego abrir http://localhost:8081  (usuario: admin / admin123)
+# Luego abrir http://localhost:8081  (usuario: admin / Admin123!)
 services:
   api:
     build: ./api
     image: jwt-ejemplo-api:latest
     ports:
       - "8080:8080"
+    environment:
+      # Si JWT_SECRET queda vacia, la API genera una clave aleatoria al arrancar
+      # (desarrollo). Con SPRING_PROFILES_ACTIVE=prod es obligatoria.
+      - JWT_SECRET=${JWT_SECRET:-}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-}
+    healthcheck:
+      # La imagen JRE no trae curl: se consulta /health con bash y /dev/tcp.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8080 && printf 'GET /health HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q ' 200 ' <&3"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
 
   web:
     build: ./web
@@ -17,4 +29,5 @@ services:
       # La app web habla con la API server-to-server usando el nombre del servicio
       - API_BASE_URL=http://api:8080
     depends_on:
-      - api
+      api:
+        condition: service_healthy

@@ -8,7 +8,12 @@ public interface UserStore {
 
     Optional<AppUser> findByUsername(String username);
 
-    void save(AppUser user);
+    Optional<AppUser> findById(long id);
 
-    boolean exists(String username);
+    /**
+     * Crea el usuario de forma atomica (el id lo asigna el almacen).
+     *
+     * @return el usuario creado, o vacio si el nombre ya estaba en uso
+     */
+    Optional<AppUser> create(String username, String passwordHash, String role);
 }

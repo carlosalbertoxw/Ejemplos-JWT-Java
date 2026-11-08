@@ -1,38 +1,16 @@
 package com.carlosalbertoxw.jwt.core.model;
 
-import java.util.Set;
-
 /**
  * Usuario de la aplicacion. Inmutable: la contrasena nunca se guarda en claro,
- * se almacena el hash y la sal (ver Pbkdf2PasswordHasher).
+ * solo su hash codificado (ver Pbkdf2PasswordHasher, que incluye sal e iteraciones).
+ *
+ * @param id           identificador (claim "sub" del access token)
+ * @param username     nombre de usuario (claim "username")
+ * @param passwordHash hash PBKDF2 codificado
+ * @param role         rol unico: "Admin" o "User" (claim "role")
  */
-public final class AppUser {
+public record AppUser(long id, String username, String passwordHash, String role) {
 
-    private final String username;
-    private final String passwordHash;
-    private final String salt;
-    private final Set<String> roles;
-
-    public AppUser(String username, String passwordHash, String salt, Set<String> roles) {
-        this.username = username;
-        this.passwordHash = passwordHash;
-        this.salt = salt;
-        this.roles = Set.copyOf(roles);
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public String getSalt() {
-        return salt;
-    }
-
-    public Set<String> getRoles() {
-        return roles;
-    }
+    public static final String ROLE_ADMIN = "Admin";
+    public static final String ROLE_USER = "User";
 }

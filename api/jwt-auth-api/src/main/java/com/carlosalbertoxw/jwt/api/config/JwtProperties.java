@@ -1,9 +1,11 @@
 package com.carlosalbertoxw.jwt.api.config;
 
-import com.carlosalbertoxw.jwt.core.config.JwtSettings;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/** Propiedades "jwt.*" de application.yml, convertidas al JwtSettings del nucleo. */
+/**
+ * Propiedades "jwt.*" de application.yml. El secreto llega por la variable
+ * JWT_SECRET y puede quedar vacio en desarrollo (ver CoreBeansConfig).
+ */
 @ConfigurationProperties(prefix = "jwt")
 public record JwtProperties(
         String issuer,
@@ -11,8 +13,4 @@ public record JwtProperties(
         String secret,
         long accessMinutes,
         long refreshDays) {
-
-    public JwtSettings toSettings() {
-        return new JwtSettings(issuer, audience, secret, accessMinutes, refreshDays);
-    }
 }

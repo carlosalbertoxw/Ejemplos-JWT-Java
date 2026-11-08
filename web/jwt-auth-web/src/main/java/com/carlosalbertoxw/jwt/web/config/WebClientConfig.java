@@ -6,11 +6,13 @@ import com.carlosalbertoxw.jwt.client.TokenRefreshInterceptor;
 import com.carlosalbertoxw.jwt.client.TokenRefresher;
 import com.carlosalbertoxw.jwt.client.TokenStore;
 import com.vaadin.flow.spring.annotation.VaadinSessionScope;
+import java.time.Duration;
 import java.util.function.Supplier;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
 /**
@@ -33,16 +35,18 @@ public class WebClientConfig {
                              ObjectProvider<TokenStore> tokenStoreProvider,
                              ObjectProvider<AuthApiClient> authApiClientProvider) {
         Supplier<String> currentAccessToken = () -> tokenStoreProvider.getObject().accessToken();
+        // Si refresh() falla lanza una excepcion; el interceptor la trata como "no se pudo".
         TokenRefresher refresher = () -> {
-            try {
-                authApiClientProvider.getObject().refresh();
-                return true;
-            } catch (RuntimeException ex) {
-                return false;
-            }
+            authApiClientProvider.getObject().refresh();
+            return true;
         };
+        // Timeouts explicitos: sin ellos, una API colgada dejaria la UI esperando para siempre.
+        var requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(Duration.ofSeconds(3));
+        requestFactory.setReadTimeout(Duration.ofSeconds(10));
         return RestClient.builder()
                 .baseUrl(baseUrl)
+                .requestFactory(requestFactory)
                 .requestInterceptor(new TokenRefreshInterceptor(currentAccessToken, refresher))
                 .build();
     }

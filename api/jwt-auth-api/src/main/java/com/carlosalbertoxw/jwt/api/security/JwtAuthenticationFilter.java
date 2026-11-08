@@ -13,7 +13,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -37,17 +36,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (header != null && header.startsWith(BEARER_PREFIX)) {
-            String token = header.substring(BEARER_PREFIX.length());
             try {
-                Claims claims = tokenService.validateAccessToken(token);
-                List<SimpleGrantedAuthority> authorities = tokenService.rolesFrom(claims).stream()
-                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                        .toList();
-                var authentication = new UsernamePasswordAuthenticationToken(
-                        claims.getSubject(), null, authorities);
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } catch (JwtException ex) {
+                Claims claims = tokenService.validateAccessToken(header.substring(BEARER_PREFIX.length()));
+                String role = claims.get("role", String.class);
+                var user = new AuthenticatedUser(
+                        claims.getSubject(),
+                        claims.get("username", String.class),
+                        role,
+                        claims.getExpiration().toInstant().getEpochSecond());
+                List<SimpleGrantedAuthority> authorities = role == null
+                        ? List.of()
+                        : List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                SecurityContextHolder.getContext().setAuthentication(
+                        new UsernamePasswordAuthenticationToken(user, null, authorities));
+            } catch (JwtException | IllegalArgumentException ex) {
                 // Token invalido o expirado: seguimos sin autenticacion (dara 401 si el recurso lo exige).
                 SecurityContextHolder.clearContext();
             }

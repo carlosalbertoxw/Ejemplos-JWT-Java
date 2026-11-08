@@ -11,5 +11,5 @@ public record RegisterRequest(
         @Pattern(regexp = "^[a-zA-Z0-9_]+$",
                 message = "El usuario solo admite letras, numeros y guion bajo")
         String username,
-        @NotBlank @Size(min = 6, message = "La contrasena debe tener al menos 6 caracteres") String password) {
+        @NotBlank @Size(min = 8, max = 200, message = "La contrasena debe tener entre 8 y 200 caracteres") String password) {
 }

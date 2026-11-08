@@ -1,6 +1,7 @@
 package com.carlosalbertoxw.catalog.client;
 
 import com.carlosalbertoxw.catalog.client.dto.ProductDto;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -42,11 +43,11 @@ public class ProductsApiClient {
     }
 
     /** Crea un producto nuevo. Requiere access token con rol ADMIN. */
-    public ProductDto create(String name, double price) {
+    public ProductDto create(String name, String description, BigDecimal price) {
         return rest.post()
                 .uri("/api/products")
                 .header("Authorization", "Bearer " + accessTokenSupplier.get())
-                .body(Map.of("name", name, "price", price))
+                .body(Map.of("name", name, "description", description, "price", price))
                 .retrieve()
                 .body(ProductDto.class);
     }

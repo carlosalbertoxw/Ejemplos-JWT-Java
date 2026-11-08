@@ -7,83 +7,103 @@ import com.carlosalbertoxw.jwt.core.security.Pbkdf2PasswordHasher;
 import com.carlosalbertoxw.jwt.core.store.RefreshTokenStore;
 import com.carlosalbertoxw.jwt.core.store.UserStore;
 import com.carlosalbertoxw.jwt.core.tokens.TokenService;
-import java.util.Set;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.logging.Logger;
 
 /**
- * Orquesta el flujo de autenticacion: registro, login, refresh (con rotacion) y logout.
+ * Orquesta el flujo de autenticacion: registro, login, refresh (con rotacion y
+ * deteccion de reuso) y logout.
  */
 public class AuthService {
+
+    private static final Logger LOG = Logger.getLogger(AuthService.class.getName());
 
     private final UserStore userStore;
     private final RefreshTokenStore refreshTokenStore;
     private final TokenService tokenService;
     private final Pbkdf2PasswordHasher passwordHasher;
+    private final Clock clock;
 
     public AuthService(UserStore userStore,
                        RefreshTokenStore refreshTokenStore,
                        TokenService tokenService,
-                       Pbkdf2PasswordHasher passwordHasher) {
+                       Pbkdf2PasswordHasher passwordHasher,
+                       Clock clock) {
         this.userStore = userStore;
         this.refreshTokenStore = refreshTokenStore;
         this.tokenService = tokenService;
         this.passwordHasher = passwordHasher;
+        this.clock = clock;
     }
 
-    /** Registra un usuario nuevo con los roles indicados. */
-    public void register(String username, String password, Set<String> roles) {
-        if (userStore.exists(username)) {
-            throw new AuthException("El usuario ya existe");
-        }
-        String salt = passwordHasher.newSalt();
-        String hash = passwordHasher.hash(password, salt);
-        userStore.save(new AppUser(username, hash, salt, roles));
+    /**
+     * Registra un usuario nuevo con rol "User".
+     *
+     * @throws UserAlreadyExistsException si el nombre ya esta en uso
+     */
+    public void register(String username, String password) {
+        // create() es atomico: dos registros simultaneos del mismo nombre no
+        // pueden ganar ambos (un exists() seguido de save() si podria).
+        userStore.create(username, passwordHasher.hash(password), AppUser.ROLE_USER)
+                .orElseThrow(UserAlreadyExistsException::new);
     }
 
     /** Verifica credenciales y emite un par access/refresh. */
     public TokenPair login(String username, String password) {
-        AppUser user = userStore.findByUsername(username)
-                .orElseThrow(() -> new AuthException("Credenciales invalidas"));
-        if (!passwordHasher.verify(password, user.getSalt(), user.getPasswordHash())) {
+        Optional<AppUser> user = userStore.findByUsername(username);
+        // Verificar SIEMPRE contra un hash (el del usuario o el senuelo) para que
+        // el tiempo de respuesta no revele si el usuario existe.
+        String hash = user.map(AppUser::passwordHash).orElseGet(passwordHasher::decoyHash);
+        if (!passwordHasher.verify(password, hash) || user.isEmpty()) {
             throw new AuthException("Credenciales invalidas");
         }
+        return issuePair(user.get());
+    }
+
+    /**
+     * Rota el refresh token: lo canjea de forma atomica y emite un par nuevo.
+     * Si llega un token que ya fue usado, se asume robo y se revocan todas las
+     * sesiones del usuario.
+     */
+    public TokenPair refresh(String refreshToken) {
+        RefreshToken stored = refreshTokenStore.find(refreshToken)
+                .orElseThrow(() -> new AuthException("Refresh token invalido, expirado o revocado"));
+
+        if (!stored.consume(clock.instant())) {
+            // Deteccion de reuso: el token existe pero ya no estaba activo, es decir,
+            // alguien presenta un token ya rotado (o dos peticiones lo usaron a la vez).
+            // Se revoca toda la familia para expulsar tambien al atacante.
+            if (!stored.isActive()) {
+                refreshTokenStore.revokeAllForUser(stored.getUserId());
+                LOG.warning(() -> "Reuso de refresh token detectado (user_id=" + stored.getUserId()
+                        + "): se revocaron todas sus sesiones");
+            }
+            throw new AuthException("Refresh token invalido, expirado o revocado");
+        }
+
+        AppUser user = userStore.findById(stored.getUserId())
+                .orElseThrow(() -> new AuthException("Refresh token invalido, expirado o revocado"));
         return issuePair(user);
     }
 
     /**
-     * Rota el refresh token: valida el actual, lo revoca y emite un par nuevo.
-     * Si el token ya no es valido, se rechaza (permite detectar reuso/robo).
+     * Revoca el refresh token enviado: cierra solo esa sesion (las de otros
+     * dispositivos siguen activas). Si no existe, no hace nada.
      */
-    public TokenPair refresh(String refreshToken) {
-        RefreshToken stored = refreshTokenStore.find(refreshToken)
-                .orElseThrow(() -> new AuthException("Refresh token invalido"));
-        // Deteccion de reuso: un token que existe pero ya fue revocado significa que
-        // alguien esta reutilizando un token rotado (posible robo). Revocamos toda la
-        // familia del usuario para invalidar tambien la sesion del atacante.
-        if (!stored.isActive()) {
-            refreshTokenStore.revokeAllForUser(stored.getUsername());
-            throw new AuthException("Refresh token reutilizado: se revocaron las sesiones del usuario");
-        }
-        if (!stored.isValidNow()) {
-            throw new AuthException("Refresh token expirado o revocado");
-        }
-        stored.revoke();
-        refreshTokenStore.save(stored);
-
-        AppUser user = userStore.findByUsername(stored.getUsername())
-                .orElseThrow(() -> new AuthException("El usuario ya no existe"));
-        return issuePair(user);
-    }
-
-    /** Revoca todos los refresh tokens del usuario. */
-    public void logout(String username) {
-        refreshTokenStore.revokeAllForUser(username);
+    public void logout(String refreshToken) {
+        refreshTokenStore.find(refreshToken).ifPresent(RefreshToken::revoke);
     }
 
     private TokenPair issuePair(AppUser user) {
+        Instant now = clock.instant();
+        // Mantenimiento oportunista: eliminar tokens ya expirados.
+        refreshTokenStore.purgeExpired(now);
+
         String access = tokenService.createAccessToken(user);
         String refresh = tokenService.createRefreshToken();
-        refreshTokenStore.save(
-                new RefreshToken(refresh, user.getUsername(), tokenService.refreshTokenExpiry()));
-        return new TokenPair(access, refresh, tokenService.accessTokenExpiry());
+        refreshTokenStore.save(refresh, user.id(), now.plus(tokenService.refreshTokenTtl()));
+        return new TokenPair(access, refresh, tokenService.accessTokenTtl().toSeconds());
     }
 }

@@ -18,6 +18,7 @@ public class PublicCatalogView extends VerticalLayout {
     public PublicCatalogView(ProductsApiClient productsApiClient) {
         Grid<ProductDto> grid = new Grid<>(ProductDto.class, false);
         grid.addColumn(ProductDto::name).setHeader("Producto");
+        grid.addColumn(ProductDto::description).setHeader("Descripcion");
         // El precio no se muestra en el catalogo publico
 
         add(buildHeader());
@@ -25,7 +26,7 @@ public class PublicCatalogView extends VerticalLayout {
         try {
             grid.setItems(productsApiClient.publicCatalog());
         } catch (Exception ex) {
-            add(new Paragraph("No se pudo conectar con la API. Asegurate de que jwt-auth-api este corriendo en el puerto 8080."));
+            add(new Paragraph("No se pudo conectar con la API. Asegurate de que la API este corriendo (API_BASE_URL)."));
         }
 
         add(new H2("Catalogo publico"),

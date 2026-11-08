@@ -33,7 +33,7 @@ public class TokenRefreshInterceptor implements ClientHttpRequestInterceptor {
         ClientHttpResponse response = execution.execute(request, body);
 
         boolean unauthorized = response.getStatusCode().value() == 401;
-        boolean authenticatedCall = request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION);
+        boolean authenticatedCall = request.getHeaders().containsHeader(HttpHeaders.AUTHORIZATION);
         if (!unauthorized || refreshing.get() || !authenticatedCall) {
             return response;
         }

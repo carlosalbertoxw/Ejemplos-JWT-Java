@@ -13,16 +13,16 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.NumberField;
+import com.vaadin.flow.component.textfield.BigDecimalField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
-import java.util.TreeSet;
+import java.math.BigDecimal;
 
 /**
  * Catalogo completo, protegido: solo accesible con sesion iniciada.
- * Incluye un formulario para agregar productos (requiere rol ADMIN en la API).
+ * Incluye un formulario para agregar productos (requiere rol Admin en la API).
  */
 @Route("products")
 public class ProductsView extends VerticalLayout implements BeforeEnterObserver {
@@ -53,19 +53,19 @@ public class ProductsView extends VerticalLayout implements BeforeEnterObserver 
         removeAll();
 
         Grid<ProductDto> grid = new Grid<>(ProductDto.class, false);
-        grid.addColumn(ProductDto::id).setHeader("Id");
         grid.addColumn(ProductDto::name).setHeader("Producto");
-        grid.addColumn(ProductDto::price).setHeader("Precio");
+        grid.addColumn(ProductDto::description).setHeader("Descripcion");
+        grid.addColumn(p -> p.price() == null ? "" : "$" + p.price()).setHeader("Precio");
 
         try {
             grid.setItems(productsApiClient.all());
-        } catch (Exception ex) {
-            Notification.show("No se pudo cargar el catalogo (token expirado?)", 3000,
+        } catch (RuntimeException ex) {
+            Notification.show("No se pudo cargar el catalogo (sesion expirada?)", 3000,
                     Notification.Position.MIDDLE);
         }
 
         add(buildHeader(), new H2("Catalogo completo"), grid);
-        // El formulario de alta solo se muestra a usuarios con rol ADMIN
+        // El formulario de alta solo se muestra al rol Admin (la API lo valida igualmente).
         if (tokenStore.isAdmin()) {
             add(buildAddForm());
         }
@@ -76,8 +76,7 @@ public class ProductsView extends VerticalLayout implements BeforeEnterObserver 
         Span username = new Span(tokenStore.username());
         username.getStyle().set("font-weight", "bold");
 
-        String roles = String.join(", ", new TreeSet<>(tokenStore.roles()));
-        Span roleLabel = new Span(roles);
+        Span roleLabel = new Span(tokenStore.role());
         roleLabel.getStyle()
                 .set("color", "var(--lumo-secondary-text-color)")
                 .set("font-size", "var(--lumo-font-size-s)");
@@ -88,7 +87,11 @@ public class ProductsView extends VerticalLayout implements BeforeEnterObserver 
         userBox.setAlignItems(FlexComponent.Alignment.END);
 
         Button logout = new Button("Cerrar sesion", e -> {
-            authApiClient.logout();
+            try {
+                authApiClient.logout();
+            } catch (RuntimeException ex) {
+                // La sesion local ya se limpio (finally en logout); solo falto avisar a la API.
+            }
             getUI().ifPresent(ui -> ui.navigate(LoginView.class));
         });
 
@@ -102,27 +105,28 @@ public class ProductsView extends VerticalLayout implements BeforeEnterObserver 
     /** Formulario para dar de alta un producto nuevo. */
     private VerticalLayout buildAddForm() {
         TextField name = new TextField("Producto");
-        NumberField price = new NumberField("Precio");
-        price.setMin(0.01);
-        price.setStep(0.5);
+        name.setMaxLength(100);
+        TextField description = new TextField("Descripcion");
+        description.setMaxLength(500);
+        BigDecimalField price = new BigDecimalField("Precio");
 
         Button add = new Button("Agregar producto", e -> {
-            if (name.isEmpty() || price.isEmpty() || price.getValue() <= 0) {
-                Notification.show("Escribe un nombre y un precio mayor que cero", 3000,
+            if (name.isEmpty() || price.isEmpty() || price.getValue().compareTo(BigDecimal.ZERO) < 0) {
+                Notification.show("Escribe un nombre y un precio mayor o igual a cero", 3000,
                         Notification.Position.MIDDLE);
                 return;
             }
             try {
-                productsApiClient.create(name.getValue().trim(), price.getValue());
+                productsApiClient.create(name.getValue().trim(), description.getValue().trim(), price.getValue());
                 Notification.show("Producto agregado");
                 render();
-            } catch (Exception ex) {
+            } catch (RuntimeException ex) {
                 Notification.show("No se pudo agregar el producto (sesion expirada?)", 3000,
                         Notification.Position.MIDDLE);
             }
         });
 
-        HorizontalLayout fields = new HorizontalLayout(name, price, add);
+        HorizontalLayout fields = new HorizontalLayout(name, description, price, add);
         fields.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.END);
         fields.setPadding(false);
 
