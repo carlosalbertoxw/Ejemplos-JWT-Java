@@ -1,6 +1,6 @@
 # ---- Etapa de compilacion ----
 # El perfil "production" compila el frontend de Vaadin (descarga Node automaticamente).
-FROM maven:3.10-eclipse-temurin-25 AS build
+FROM maven:3-eclipse-temurin-27 AS build
 WORKDIR /build
 
 COPY pom.xml .
