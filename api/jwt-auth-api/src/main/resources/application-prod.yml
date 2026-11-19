@@ -1,0 +1,9 @@
+# Perfil de produccion (SPRING_PROFILES_ACTIVE=prod).
+# La documentacion interactiva (Swagger UI) y el documento OpenAPI solo se
+# publican en desarrollo: en produccion describirian a cualquiera toda la
+# superficie de la API.
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

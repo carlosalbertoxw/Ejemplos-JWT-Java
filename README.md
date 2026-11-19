@@ -133,6 +133,7 @@ y la otra cuenta como reuso (se revocan todas las sesiones del usuario).
 
 En **Swagger UI** (`/swagger-ui.html`) usa el botón **Authorize** y pega tu access token
 (el que devuelve `/api/auth/login`) para probar los endpoints protegidos.
+Con el perfil `prod` Swagger UI y `/v3/api-docs` quedan desactivados.
 
 ### Configuración (variables de entorno)
 
