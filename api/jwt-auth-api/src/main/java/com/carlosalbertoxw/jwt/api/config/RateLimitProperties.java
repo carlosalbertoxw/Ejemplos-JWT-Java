@@ -11,5 +11,4 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param window             ventana deslizante
  */
 @ConfigurationProperties(prefix = "rate-limit")
-public record RateLimitProperties(int accountMaxAttempts, int ipMaxAttempts, Duration window) {
-}
+public record RateLimitProperties(int accountMaxAttempts, int ipMaxAttempts, Duration window) {}

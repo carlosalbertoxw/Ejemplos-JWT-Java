@@ -31,9 +31,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (header != null && header.startsWith(BEARER_PREFIX)) {
             try {
@@ -44,11 +43,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         claims.get("username", String.class),
                         role,
                         claims.getExpiration().toInstant().getEpochSecond());
-                List<SimpleGrantedAuthority> authorities = role == null
-                        ? List.of()
-                        : List.of(new SimpleGrantedAuthority("ROLE_" + role));
-                SecurityContextHolder.getContext().setAuthentication(
-                        new UsernamePasswordAuthenticationToken(user, null, authorities));
+                List<SimpleGrantedAuthority> authorities =
+                        role == null ? List.of() : List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                SecurityContextHolder.getContext()
+                        .setAuthentication(new UsernamePasswordAuthenticationToken(user, null, authorities));
             } catch (JwtException | IllegalArgumentException ex) {
                 // Token invalido o expirado: seguimos sin autenticacion (dara 401 si el recurso lo exige).
                 SecurityContextHolder.clearContext();

@@ -26,11 +26,12 @@ public class AuthService {
     private final Pbkdf2PasswordHasher passwordHasher;
     private final Clock clock;
 
-    public AuthService(UserStore userStore,
-                       RefreshTokenStore refreshTokenStore,
-                       TokenService tokenService,
-                       Pbkdf2PasswordHasher passwordHasher,
-                       Clock clock) {
+    public AuthService(
+            UserStore userStore,
+            RefreshTokenStore refreshTokenStore,
+            TokenService tokenService,
+            Pbkdf2PasswordHasher passwordHasher,
+            Clock clock) {
         this.userStore = userStore;
         this.refreshTokenStore = refreshTokenStore;
         this.tokenService = tokenService;
@@ -46,7 +47,8 @@ public class AuthService {
     public void register(String username, String password) {
         // create() es atomico: dos registros simultaneos del mismo nombre no
         // pueden ganar ambos (un exists() seguido de save() si podria).
-        userStore.create(username, passwordHasher.hash(password), AppUser.ROLE_USER)
+        userStore
+                .create(username, passwordHasher.hash(password), AppUser.ROLE_USER)
                 .orElseThrow(UserAlreadyExistsException::new);
     }
 
@@ -68,7 +70,8 @@ public class AuthService {
      * sesiones del usuario.
      */
     public TokenPair refresh(String refreshToken) {
-        RefreshToken stored = refreshTokenStore.find(refreshToken)
+        RefreshToken stored = refreshTokenStore
+                .find(refreshToken)
                 .orElseThrow(() -> new AuthException("Refresh token invalido, expirado o revocado"));
 
         if (!stored.consume(clock.instant())) {
@@ -83,7 +86,8 @@ public class AuthService {
             throw new AuthException("Refresh token invalido, expirado o revocado");
         }
 
-        AppUser user = userStore.findById(stored.getUserId())
+        AppUser user = userStore
+                .findById(stored.getUserId())
                 .orElseThrow(() -> new AuthException("Refresh token invalido, expirado o revocado"));
         return issuePair(user);
     }

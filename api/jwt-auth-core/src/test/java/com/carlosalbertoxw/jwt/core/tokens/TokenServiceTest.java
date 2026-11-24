@@ -45,9 +45,11 @@ class TokenServiceTest {
         var otherIssuer = new TokenService(new JwtSettings("otro", "aud", SECRET, 15, 7));
         var otherAudience = new TokenService(new JwtSettings("iss", "otra", SECRET, 15, 7));
 
-        assertThrows(IncorrectClaimException.class,
+        assertThrows(
+                IncorrectClaimException.class,
                 () -> tokenService.validateAccessToken(otherIssuer.createAccessToken(ADMIN)));
-        assertThrows(IncorrectClaimException.class,
+        assertThrows(
+                IncorrectClaimException.class,
                 () -> tokenService.validateAccessToken(otherAudience.createAccessToken(ADMIN)));
     }
 
@@ -64,7 +66,7 @@ class TokenServiceTest {
 
     @Test
     void rejectsSecretsShorterThan32Bytes() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new TokenService(new JwtSettings("iss", "aud", "corta", 15, 7)));
+        assertThrows(
+                IllegalArgumentException.class, () -> new TokenService(new JwtSettings("iss", "aud", "corta", 15, 7)));
     }
 }

@@ -25,11 +25,7 @@
         </dependency>
         <dependency>
             <groupId>com.carlosalbertoxw</groupId>
-            <artifactId>catalog-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.carlosalbertoxw</groupId>
-            <artifactId>catalog-data</artifactId>
+            <artifactId>catalog</artifactId>
         </dependency>
 
         <dependency>

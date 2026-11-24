@@ -8,5 +8,4 @@ package com.carlosalbertoxw.jwt.api.security;
  * @param role      claim "role"
  * @param expiresAt claim "exp" (segundos Unix)
  */
-public record AuthenticatedUser(String id, String username, String role, long expiresAt) {
-}
+public record AuthenticatedUser(String id, String username, String role, long expiresAt) {}

@@ -7,5 +7,4 @@ package com.carlosalbertoxw.jwt.core.model;
  * @param refreshToken     token opaco de larga vida
  * @param expiresInSeconds segundos de vida del access token
  */
-public record TokenPair(String accessToken, String refreshToken, long expiresInSeconds) {
-}
+public record TokenPair(String accessToken, String refreshToken, long expiresInSeconds) {}

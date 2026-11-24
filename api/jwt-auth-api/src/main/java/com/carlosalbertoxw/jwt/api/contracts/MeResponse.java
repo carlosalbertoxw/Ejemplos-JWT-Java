@@ -7,5 +7,4 @@ public record MeResponse(
         String id,
         String username,
         String role,
-        @JsonProperty("token_expires_at") long tokenExpiresAt) {
-}
+        @JsonProperty("token_expires_at") long tokenExpiresAt) {}

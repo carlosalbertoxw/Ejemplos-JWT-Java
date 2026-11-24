@@ -14,15 +14,11 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @OpenAPIDefinition(
-        info = @Info(
-                title = "JWT Auth API",
-                version = "1.0",
-                description = "API de autenticacion JWT (login, refresh, logout) y catalogo de productos."),
+        info =
+                @Info(
+                        title = "JWT Auth API",
+                        version = "1.0",
+                        description = "API de autenticacion JWT (login, refresh, logout) y catalogo de productos."),
         security = @SecurityRequirement(name = "bearer-jwt"))
-@SecurityScheme(
-        name = "bearer-jwt",
-        type = SecuritySchemeType.HTTP,
-        scheme = "bearer",
-        bearerFormat = "JWT")
-public class OpenApiConfig {
-}
+@SecurityScheme(name = "bearer-jwt", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT")
+public class OpenApiConfig {}

@@ -138,6 +138,14 @@ class AuthServiceTest {
         assertDoesNotThrow(() -> authService.login("nuevo", "Nuevo123!"));
     }
 
+    @Test
+    void usernamesAreCaseInsensitive() {
+        // "Admin" no puede registrarse como una cuenta distinta de "admin"...
+        assertThrows(UserAlreadyExistsException.class, () -> authService.register("ADMIN", "Otra1234!"));
+        // ...y el login acepta el nombre con cualquier combinacion de mayusculas.
+        assertDoesNotThrow(() -> authService.login("Admin", "Admin123!"));
+    }
+
     /** Reloj controlable para simular el paso del tiempo. */
     static final class MutableClock extends Clock {
         private volatile Instant now;

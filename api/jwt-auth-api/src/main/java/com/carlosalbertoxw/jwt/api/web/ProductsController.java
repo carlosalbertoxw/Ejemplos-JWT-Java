@@ -45,7 +45,8 @@ public class ProductsController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Product create(@Valid @RequestBody CreateProductRequest request) {
-        String description = request.description() == null ? "" : request.description().trim();
+        String description =
+                request.description() == null ? "" : request.description().trim();
         return productStore.add(request.name().trim(), description, request.price());
     }
 }
