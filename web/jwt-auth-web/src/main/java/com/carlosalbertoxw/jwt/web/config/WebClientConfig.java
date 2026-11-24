@@ -31,10 +31,12 @@ public class WebClientConfig {
      * sesion en curso y para evitar el ciclo RestClient -&gt; AuthApiClient -&gt; RestClient.
      */
     @Bean
-    RestClient apiRestClient(@Value("${api.base-url}") String baseUrl,
-                             ObjectProvider<TokenStore> tokenStoreProvider,
-                             ObjectProvider<AuthApiClient> authApiClientProvider) {
-        Supplier<String> currentAccessToken = () -> tokenStoreProvider.getObject().accessToken();
+    RestClient apiRestClient(
+            @Value("${api.base-url}") String baseUrl,
+            ObjectProvider<TokenStore> tokenStoreProvider,
+            ObjectProvider<AuthApiClient> authApiClientProvider) {
+        Supplier<String> currentAccessToken =
+                () -> tokenStoreProvider.getObject().accessToken();
         // Si refresh() falla lanza una excepcion; el interceptor la trata como "no se pudo".
         TokenRefresher refresher = () -> {
             authApiClientProvider.getObject().refresh();

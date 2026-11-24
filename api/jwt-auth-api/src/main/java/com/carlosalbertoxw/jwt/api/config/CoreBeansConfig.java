@@ -50,14 +50,13 @@ public class CoreBeansConfig {
         String secret = props.secret();
         if (secret == null || secret.isBlank()) {
             if (environment.matchesProfiles("prod")) {
-                throw new IllegalStateException(
-                        "Con el perfil prod debes definir JWT_SECRET (>= 32 bytes).");
+                throw new IllegalStateException("Con el perfil prod debes definir JWT_SECRET (>= 32 bytes).");
             }
             LOG.warn("JWT_SECRET no esta definida: se genero una clave aleatoria de desarrollo.");
             secret = TokenService.randomSecret();
         }
-        JwtSettings settings = new JwtSettings(
-                props.issuer(), props.audience(), secret, props.accessMinutes(), props.refreshDays());
+        JwtSettings settings =
+                new JwtSettings(props.issuer(), props.audience(), secret, props.accessMinutes(), props.refreshDays());
         return new TokenService(settings, clock);
     }
 
@@ -77,11 +76,12 @@ public class CoreBeansConfig {
     }
 
     @Bean
-    AuthService authService(UserStore userStore,
-                            RefreshTokenStore refreshTokenStore,
-                            TokenService tokenService,
-                            Pbkdf2PasswordHasher hasher,
-                            Clock clock) {
+    AuthService authService(
+            UserStore userStore,
+            RefreshTokenStore refreshTokenStore,
+            TokenService tokenService,
+            Pbkdf2PasswordHasher hasher,
+            Clock clock) {
         return new AuthService(userStore, refreshTokenStore, tokenService, hasher, clock);
     }
 

@@ -26,18 +26,20 @@ public class PublicCatalogView extends VerticalLayout {
         try {
             grid.setItems(productsApiClient.publicCatalog());
         } catch (Exception ex) {
-            add(new Paragraph("No se pudo conectar con la API. Asegurate de que la API este corriendo (API_BASE_URL)."));
+            add(new Paragraph(
+                    "No se pudo conectar con la API. Asegurate de que la API este corriendo (API_BASE_URL)."));
         }
 
-        add(new H2("Catalogo publico"),
-                new Paragraph("Todos los productos son visibles sin iniciar sesion, pero el precio solo se muestra al iniciar sesion."),
+        add(
+                new H2("Catalogo publico"),
+                new Paragraph(
+                        "Todos los productos son visibles sin iniciar sesion, pero el precio solo se muestra al iniciar sesion."),
                 grid);
     }
 
     /** Barra superior: enlace para iniciar sesion, alineado a la derecha. */
     private HorizontalLayout buildHeader() {
-        HorizontalLayout header = new HorizontalLayout(
-                new RouterLink("Iniciar sesion para ver todo", LoginView.class));
+        HorizontalLayout header = new HorizontalLayout(new RouterLink("Iniciar sesion para ver todo", LoginView.class));
         header.setWidthFull();
         header.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
         header.setAlignItems(FlexComponent.Alignment.CENTER);

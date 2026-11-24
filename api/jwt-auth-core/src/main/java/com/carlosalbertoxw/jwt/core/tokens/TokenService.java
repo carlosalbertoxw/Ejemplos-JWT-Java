@@ -34,9 +34,8 @@ public class TokenService {
     }
 
     public TokenService(JwtSettings settings, Clock clock) {
-        byte[] secret = settings.secret() == null
-                ? new byte[0]
-                : settings.secret().getBytes(StandardCharsets.UTF_8);
+        byte[] secret =
+                settings.secret() == null ? new byte[0] : settings.secret().getBytes(StandardCharsets.UTF_8);
         if (secret.length < JwtSettings.MIN_SECRET_BYTES) {
             throw new IllegalArgumentException(
                     "La clave de firma debe tener al menos " + JwtSettings.MIN_SECRET_BYTES + " bytes");
@@ -51,7 +50,9 @@ public class TokenService {
         Instant now = clock.instant();
         return Jwts.builder()
                 .issuer(settings.issuer())
-                .audience().add(settings.audience()).and()
+                .audience()
+                .add(settings.audience())
+                .and()
                 .subject(String.valueOf(user.id()))
                 .claim("username", user.username())
                 .claim("role", user.role())

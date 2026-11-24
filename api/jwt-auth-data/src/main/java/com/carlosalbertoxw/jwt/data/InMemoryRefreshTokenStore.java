@@ -31,22 +31,17 @@ public class InMemoryRefreshTokenStore implements RefreshTokenStore {
 
     @Override
     public void revokeAllForUser(long userId) {
-        tokens.values().stream()
-                .filter(t -> t.getUserId() == userId)
-                .forEach(RefreshToken::revoke);
+        tokens.values().stream().filter(t -> t.getUserId() == userId).forEach(RefreshToken::revoke);
     }
 
     @Override
-    public int purgeExpired(Instant now) {
-        int before = tokens.size();
+    public void purgeExpired(Instant now) {
         tokens.values().removeIf(t -> t.isExpired(now));
-        return before - tokens.size();
     }
 
     private static String hash(String token) {
         try {
-            byte[] digest = MessageDigest.getInstance("SHA-256")
-                    .digest(token.getBytes(StandardCharsets.UTF_8));
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(digest);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);

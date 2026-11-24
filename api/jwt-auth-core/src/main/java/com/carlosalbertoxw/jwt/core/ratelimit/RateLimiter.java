@@ -34,7 +34,9 @@ public class RateLimiter {
     /** Segundos que faltan para poder reintentar (para el header Retry-After). */
     public long retryAfterSeconds(String key) {
         return attempts.oldestSince(key, windowStart())
-                .map(oldest -> Math.max(0, Duration.between(clock.instant(), oldest.plus(window)).toSeconds()))
+                .map(oldest -> Math.max(
+                        0,
+                        Duration.between(clock.instant(), oldest.plus(window)).toSeconds()))
                 .orElse(0L);
     }
 

@@ -10,5 +10,4 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record AuthResult(
         @JsonProperty("access_token") String accessToken,
-        @JsonProperty("refresh_token") String refreshToken) {
-}
+        @JsonProperty("refresh_token") String refreshToken) {}

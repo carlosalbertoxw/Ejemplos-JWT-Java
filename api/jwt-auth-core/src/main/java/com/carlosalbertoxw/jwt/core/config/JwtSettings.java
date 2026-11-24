@@ -9,12 +9,7 @@ package com.carlosalbertoxw.jwt.core.config;
  * @param accessMinutes   minutos de vida del access token (corto)
  * @param refreshDays     dias de vida del refresh token (largo)
  */
-public record JwtSettings(
-        String issuer,
-        String audience,
-        String secret,
-        long accessMinutes,
-        long refreshDays) {
+public record JwtSettings(String issuer, String audience, String secret, long accessMinutes, long refreshDays) {
 
     /** Longitud minima de la clave HMAC-SHA256 (RFC 7518: 256 bits). */
     public static final int MIN_SECRET_BYTES = 32;

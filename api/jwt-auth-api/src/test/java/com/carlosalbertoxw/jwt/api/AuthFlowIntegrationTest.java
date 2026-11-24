@@ -89,8 +89,7 @@ class AuthFlowIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").exists());
 
-        mvc.perform(json(post("/api/auth/refresh"), body))
-                .andExpect(status().isUnauthorized());
+        mvc.perform(json(post("/api/auth/refresh"), body)).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -119,10 +118,13 @@ class AuthFlowIntegrationTest {
     }
 
     private String loginField(String username, String password, String path) throws Exception {
-        String response = mvc.perform(json(post("/api/auth/login"),
+        String response = mvc.perform(json(
+                        post("/api/auth/login"),
                         "{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}"))
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
         return JsonPath.read(response, path);
     }
 

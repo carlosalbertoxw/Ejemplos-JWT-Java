@@ -28,8 +28,8 @@ public class TokenRefreshInterceptor implements ClientHttpRequestInterceptor {
     }
 
     @Override
-    public ClientHttpResponse intercept(HttpRequest request, byte[] body,
-                                        ClientHttpRequestExecution execution) throws IOException {
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
+            throws IOException {
         ClientHttpResponse response = execution.execute(request, body);
 
         boolean unauthorized = response.getStatusCode().value() == 401;
