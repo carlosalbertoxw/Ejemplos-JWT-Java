@@ -14,8 +14,7 @@ import org.springframework.web.client.RestClient;
  */
 public class ProductsApiClient {
 
-    private static final ParameterizedTypeReference<List<ProductDto>> LIST =
-            new ParameterizedTypeReference<>() {};
+    private static final ParameterizedTypeReference<List<ProductDto>> LIST = new ParameterizedTypeReference<>() {};
 
     private final RestClient rest;
     private final Supplier<String> accessTokenSupplier;
@@ -27,10 +26,7 @@ public class ProductsApiClient {
 
     /** Catalogo publico, sin token. */
     public List<ProductDto> publicCatalog() {
-        return rest.get()
-                .uri("/api/products/public")
-                .retrieve()
-                .body(LIST);
+        return rest.get().uri("/api/products/public").retrieve().body(LIST);
     }
 
     /** Catalogo completo, requiere access token. */

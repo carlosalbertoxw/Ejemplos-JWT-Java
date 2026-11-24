@@ -62,7 +62,8 @@ public class TokenStore {
             if (parts.length < 2) {
                 return null;
             }
-            JsonNode value = MAPPER.readTree(Base64.getUrlDecoder().decode(parts[1])).get(name);
+            JsonNode value =
+                    MAPPER.readTree(Base64.getUrlDecoder().decode(parts[1])).get(name);
             return value != null && value.isString() ? value.asString() : null;
         } catch (RuntimeException ignored) {
             // token con formato inesperado

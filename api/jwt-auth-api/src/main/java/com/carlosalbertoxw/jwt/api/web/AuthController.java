@@ -102,8 +102,8 @@ public class AuthController {
      * del contrato comun). Cuenta cada intento por IP para frenar registros masivos.
      */
     @PostMapping("/register")
-    public ResponseEntity<MessageResponse> register(@Valid @RequestBody RegisterRequest request,
-                                                    HttpServletRequest http) {
+    public ResponseEntity<MessageResponse> register(
+            @Valid @RequestBody RegisterRequest request, HttpServletRequest http) {
         String ipKey = "register:ip:" + http.getRemoteAddr();
         AuthRateLimits.check(limits.ip(), ipKey);
         limits.ip().recordFailure(ipKey);

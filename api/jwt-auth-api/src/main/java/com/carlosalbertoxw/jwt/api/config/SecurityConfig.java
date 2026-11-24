@@ -1,5 +1,6 @@
 package com.carlosalbertoxw.jwt.api.config;
 
+import com.carlosalbertoxw.jwt.api.contracts.ErrorResponse;
 import com.carlosalbertoxw.jwt.api.security.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Seguridad stateless basada en JWT:
@@ -24,38 +26,54 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter, JsonMapper json)
+            throws Exception {
         http
                 // Sin cookies de sesion (todo va por Authorization: Bearer), CSRF no aplica.
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // el re-dispatch a /error debe poder renderizarse (si no, un 400 se convierte en 401)
-                        .requestMatchers("/error", "/health").permitAll()
-                        // logout es publico: el refresh token del cuerpo es la credencial
-                        .requestMatchers(HttpMethod.POST,
-                                "/api/auth/login", "/api/auth/refresh", "/api/auth/logout", "/api/auth/register")
+                        .requestMatchers("/error", "/health")
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/products/public").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                        // logout es publico: el refresh token del cuerpo es la credencial
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/auth/login",
+                                "/api/auth/refresh",
+                                "/api/auth/logout",
+                                "/api/auth/register")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/products/public")
+                        .permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
+                        .permitAll()
                         // crear productos: solo el rol Admin
-                        .requestMatchers(HttpMethod.POST, "/api/products").hasRole("Admin")
-                        .anyRequest().authenticated())
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((request, response, e) -> writeError(
-                                response, HttpServletResponse.SC_UNAUTHORIZED,
+                        .requestMatchers(HttpMethod.POST, "/api/products")
+                        .hasRole("Admin")
+                        .anyRequest()
+                        .authenticated())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, e) -> writeError(
+                                json,
+                                response,
+                                HttpServletResponse.SC_UNAUTHORIZED,
                                 "Falta el access token o es invalido"))
                         .accessDeniedHandler((request, response, e) -> writeError(
-                                response, HttpServletResponse.SC_FORBIDDEN, "Se requiere el rol Admin")))
+                                json, response, HttpServletResponse.SC_FORBIDDEN, "Se requiere el rol Admin")))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
-    /** Errores de seguridad con el mismo formato que el resto de la API: {"error": "..."}. */
-    private static void writeError(HttpServletResponse response, int status, String message) throws IOException {
+    /**
+     * Errores de seguridad con el mismo formato que el resto de la API: {"error": "..."}.
+     * Se serializa con el mismo ErrorResponse y JsonMapper que los controladores, en vez
+     * de armar el JSON a mano (que se rompería con comillas en el mensaje).
+     */
+    private static void writeError(JsonMapper json, HttpServletResponse response, int status, String message)
+            throws IOException {
         response.setStatus(status);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"error\":\"" + message + "\"}");
+        json.writeValue(response.getWriter(), new ErrorResponse(message));
     }
 }

@@ -12,8 +12,7 @@ class RateLimiterTest {
 
     private final AuthServiceTest.MutableClock clock =
             new AuthServiceTest.MutableClock(Instant.parse("2026-01-01T00:00:00Z"));
-    private final RateLimiter limiter =
-            new RateLimiter(new InMemoryAttemptStore(), 3, Duration.ofMinutes(1), clock);
+    private final RateLimiter limiter = new RateLimiter(new InMemoryAttemptStore(), 3, Duration.ofMinutes(1), clock);
 
     @Test
     void blocksAfterMaxFailuresAndReportsRetryAfter() {

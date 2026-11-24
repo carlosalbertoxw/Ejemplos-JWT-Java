@@ -6,8 +6,7 @@ WORKDIR /build
 COPY pom.xml .
 COPY jwt-auth-core/pom.xml jwt-auth-core/
 COPY jwt-auth-data/pom.xml jwt-auth-data/
-COPY catalog-core/pom.xml catalog-core/
-COPY catalog-data/pom.xml catalog-data/
+COPY catalog/pom.xml catalog/
 COPY jwt-auth-api/pom.xml jwt-auth-api/
 RUN mvn -B -q dependency:go-offline
 

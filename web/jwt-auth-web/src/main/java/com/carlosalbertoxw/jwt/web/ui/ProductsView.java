@@ -31,9 +31,7 @@ public class ProductsView extends VerticalLayout implements BeforeEnterObserver 
     private final ProductsApiClient productsApiClient;
     private final AuthApiClient authApiClient;
 
-    public ProductsView(TokenStore tokenStore,
-                        ProductsApiClient productsApiClient,
-                        AuthApiClient authApiClient) {
+    public ProductsView(TokenStore tokenStore, ProductsApiClient productsApiClient, AuthApiClient authApiClient) {
         this.tokenStore = tokenStore;
         this.productsApiClient = productsApiClient;
         this.authApiClient = authApiClient;
@@ -60,8 +58,7 @@ public class ProductsView extends VerticalLayout implements BeforeEnterObserver 
         try {
             grid.setItems(productsApiClient.all());
         } catch (RuntimeException ex) {
-            Notification.show("No se pudo cargar el catalogo (sesion expirada?)", 3000,
-                    Notification.Position.MIDDLE);
+            Notification.show("No se pudo cargar el catalogo (sesion expirada?)", 3000, Notification.Position.MIDDLE);
         }
 
         add(buildHeader(), new H2("Catalogo completo"), grid);
@@ -77,7 +74,8 @@ public class ProductsView extends VerticalLayout implements BeforeEnterObserver 
         username.getStyle().set("font-weight", "bold");
 
         Span roleLabel = new Span(tokenStore.role());
-        roleLabel.getStyle()
+        roleLabel
+                .getStyle()
                 .set("color", "var(--lumo-secondary-text-color)")
                 .set("font-size", "var(--lumo-font-size-s)");
 
@@ -112,17 +110,18 @@ public class ProductsView extends VerticalLayout implements BeforeEnterObserver 
 
         Button add = new Button("Agregar producto", e -> {
             if (name.isEmpty() || price.isEmpty() || price.getValue().compareTo(BigDecimal.ZERO) < 0) {
-                Notification.show("Escribe un nombre y un precio mayor o igual a cero", 3000,
-                        Notification.Position.MIDDLE);
+                Notification.show(
+                        "Escribe un nombre y un precio mayor o igual a cero", 3000, Notification.Position.MIDDLE);
                 return;
             }
             try {
-                productsApiClient.create(name.getValue().trim(), description.getValue().trim(), price.getValue());
+                productsApiClient.create(
+                        name.getValue().trim(), description.getValue().trim(), price.getValue());
                 Notification.show("Producto agregado");
                 render();
             } catch (RuntimeException ex) {
-                Notification.show("No se pudo agregar el producto (sesion expirada?)", 3000,
-                        Notification.Position.MIDDLE);
+                Notification.show(
+                        "No se pudo agregar el producto (sesion expirada?)", 3000, Notification.Position.MIDDLE);
             }
         });
 

@@ -7,10 +7,4 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * JWT_SECRET y puede quedar vacio en desarrollo (ver CoreBeansConfig).
  */
 @ConfigurationProperties(prefix = "jwt")
-public record JwtProperties(
-        String issuer,
-        String audience,
-        String secret,
-        long accessMinutes,
-        long refreshDays) {
-}
+public record JwtProperties(String issuer, String audience, String secret, long accessMinutes, long refreshDays) {}

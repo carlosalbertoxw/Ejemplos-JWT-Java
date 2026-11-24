@@ -7,6 +7,6 @@ import jakarta.validation.constraints.Size;
 public record LoginRequest(
         @NotBlank(message = "username es obligatorio") @Size(max = 100, message = "username es demasiado largo")
         String username,
+
         @NotBlank(message = "password es obligatorio") @Size(max = 200, message = "password es demasiado largo")
-        String password) {
-}
+        String password) {}
